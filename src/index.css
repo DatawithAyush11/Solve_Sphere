@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -63,6 +65,7 @@
 
   h1, h2, h3, h4 {
     @apply tracking-tight;
+    font-family: 'Poppins', 'Inter', system-ui, sans-serif;
   }
 }
 
@@ -71,8 +74,16 @@
     @apply bg-card/80 backdrop-blur-md border border-border/50 rounded-xl;
   }
 
+  .glass-card-hover {
+    @apply glass-card hover:border-primary/40 hover:bg-card/90 transition-all duration-300;
+  }
+
   .glow-primary {
     box-shadow: 0 0 20px hsl(175 80% 50% / 0.15), 0 0 60px hsl(175 80% 50% / 0.05);
+  }
+
+  .glow-primary-strong {
+    box-shadow: 0 0 30px hsl(175 80% 50% / 0.25), 0 0 80px hsl(175 80% 50% / 0.1);
   }
 
   .glow-accent {
@@ -91,4 +102,113 @@
     @apply bg-clip-text text-transparent;
     background-image: linear-gradient(135deg, hsl(175 80% 50%), hsl(190 80% 60%));
   }
+
+  .text-gradient-gold {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, hsl(38 92% 60%), hsl(45 95% 70%));
+  }
+
+  .text-gradient-purple {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, hsl(270 80% 65%), hsl(290 80% 70%));
+  }
+
+  .xp-bar-fill {
+    background: linear-gradient(90deg, hsl(175 80% 45%), hsl(190 80% 60%), hsl(175 80% 55%));
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite linear;
+  }
+
+  .hover-scale {
+    @apply hover:scale-[1.02] transition-transform duration-200;
+  }
+
+  .badge-easy {
+    @apply bg-emerald-500/20 text-emerald-400 border border-emerald-500/30;
+  }
+  .badge-medium {
+    @apply bg-amber-500/20 text-amber-400 border border-amber-500/30;
+  }
+  .badge-hard {
+    @apply bg-rose-500/20 text-rose-400 border border-rose-500/30;
+  }
+
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border)) transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar { width: 4px; height: 4px; }
+  .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+  .scrollbar-thin::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 2px; }
 }
+
+/* ───── Animations ───── */
+@keyframes shimmer {
+  0% { background-position: 0% 0%; }
+  100% { background-position: 200% 0%; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 20px hsl(175 80% 50% / 0.15), 0 0 60px hsl(175 80% 50% / 0.05); }
+  50% { box-shadow: 0 0 30px hsl(175 80% 50% / 0.3), 0 0 90px hsl(175 80% 50% / 0.12); }
+}
+
+@keyframes slide-in-up {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes count-up {
+  from { opacity: 0; transform: scale(0.8); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes ping-slow {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.15); opacity: 0.7; }
+}
+
+@keyframes streak-bounce {
+  0%, 100% { transform: scale(1) rotate(-5deg); }
+  50% { transform: scale(1.2) rotate(5deg); }
+}
+
+.animate-fade-in { animation: fade-in 0.4s ease-out forwards; }
+.animate-slide-up { animation: slide-in-up 0.5s ease-out forwards; }
+.animate-float { animation: float 4s ease-in-out infinite; }
+.animate-pulse-glow { animation: pulse-glow 3s ease-in-out infinite; }
+.animate-count { animation: count-up 0.6s ease-out forwards; }
+.animate-spin-slow { animation: spin-slow 8s linear infinite; }
+.animate-ping-slow { animation: ping-slow 2s ease-in-out infinite; }
+.animate-streak { animation: streak-bounce 1.5s ease-in-out infinite; }
+
+.logo-float { animation: float 5s ease-in-out infinite; }
+.logo-icon-glow {
+  filter: drop-shadow(0 0 8px hsl(175 80% 50% / 0.5));
+  transition: filter 0.3s ease;
+}
+.logo-icon-glow:hover {
+  filter: drop-shadow(0 0 15px hsl(175 80% 50% / 0.8));
+}
+
+/* Delay utilities */
+.delay-100 { animation-delay: 100ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-400 { animation-delay: 400ms; }
+.delay-500 { animation-delay: 500ms; }

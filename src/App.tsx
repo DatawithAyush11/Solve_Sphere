@@ -13,6 +13,11 @@ import Leaderboard from "./pages/Leaderboard";
 import Portfolio from "./pages/Portfolio";
 import ProfileEdit from "./pages/ProfileEdit";
 import NotFound from "./pages/NotFound";
+import Quiz from "./pages/Quiz";
+import MCQQuiz from "./pages/quiz/MCQQuiz";
+import QuizResults from "./pages/quiz/QuizResults";
+import CodingProblems from "./pages/quiz/CodingProblems";
+import CodeEditor from "./pages/quiz/CodeEditor";
 import { Loader2 } from "lucide-react";
 
 const queryClient = new QueryClient();
@@ -46,6 +51,12 @@ function AppRoutes() {
       <Route path="/leaderboard" element={<ProtectedRoute><AuthenticatedLayout><Leaderboard /></AuthenticatedLayout></ProtectedRoute>} />
       <Route path="/portfolio" element={<ProtectedRoute><AuthenticatedLayout><Portfolio /></AuthenticatedLayout></ProtectedRoute>} />
       <Route path="/profile/edit" element={<ProtectedRoute><AuthenticatedLayout><ProfileEdit /></AuthenticatedLayout></ProtectedRoute>} />
+      {/* Quiz routes */}
+      <Route path="/quiz" element={<ProtectedRoute><AuthenticatedLayout><Quiz /></AuthenticatedLayout></ProtectedRoute>} />
+      <Route path="/quiz/mcq" element={<ProtectedRoute><AuthenticatedLayout><MCQQuiz /></AuthenticatedLayout></ProtectedRoute>} />
+      <Route path="/quiz/results" element={<ProtectedRoute><AuthenticatedLayout><QuizResults /></AuthenticatedLayout></ProtectedRoute>} />
+      <Route path="/quiz/coding" element={<ProtectedRoute><AuthenticatedLayout><CodingProblems /></AuthenticatedLayout></ProtectedRoute>} />
+      <Route path="/quiz/coding/:id" element={<ProtectedRoute><CodeEditor /></ProtectedRoute>} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
