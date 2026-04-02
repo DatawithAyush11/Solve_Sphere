@@ -9,6 +9,8 @@ import LeaderboardPreview from '@/components/dashboard/LeaderboardPreview';
 import ActivityFeed from '@/components/dashboard/ActivityFeed';
 import AnalyticsPanel from '@/components/dashboard/AnalyticsPanel';
 import { format, subDays } from 'date-fns';
+import { SkeletonCard, SkeletonAvatar, SkeletonText } from '@/components/ui/SkeletonCard';
+
 
 interface DashboardData {
   xp: number;
@@ -139,10 +141,27 @@ export default function Index() {
 
   if (!user) return null;
   if (loading) return (
-    <div className="flex min-h-[50vh] items-center justify-center">
-      <div className="flex flex-col items-center gap-3">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="text-sm text-muted-foreground">Loading your dashboard...</p>
+    <div className="container py-6 space-y-8 max-w-7xl">
+      <div className="glass-card p-6 sm:p-8 flex items-center justify-between gap-6">
+         <div className="space-y-4 w-full">
+           <SkeletonText lines={1} className="w-[150px]" />
+           <SkeletonText lines={2} className="w-[300px]" />
+           <div className="h-3 mt-6 rounded-full bg-secondary/60 w-full" />
+         </div>
+         <div className="hidden sm:flex gap-4">
+           <SkeletonCard lines={0} hasHeader={false} className="h-24 w-20" />
+           <SkeletonCard lines={0} hasHeader={false} className="h-24 w-20" />
+         </div>
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 space-y-8">
+          <SkeletonCard lines={4} hasHeader={true} />
+          <SkeletonCard lines={5} hasHeader={true} className="h-64" />
+        </div>
+        <div className="space-y-8">
+          <SkeletonCard lines={4} hasHeader={false} />
+          <SkeletonCard lines={6} hasHeader={true} />
+        </div>
       </div>
     </div>
   );

@@ -36,7 +36,7 @@ export default function Quiz() {
       {/* Mode Selection */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* MCQ Quiz Card */}
-        <div className="group relative rounded-2xl border border-border/50 bg-card overflow-hidden cursor-pointer hover:border-primary/50 transition-all duration-300 hover:shadow-2xl hover:shadow-primary/10 hover:-translate-y-1"
+        <div className="group relative glass-card card-premium overflow-hidden cursor-pointer hover:border-primary/50 transition-all duration-300 hover:shadow-2xl hover:shadow-primary/10 hover:-translate-y-1"
           onClick={() => navigate('/quiz/mcq')}>
           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-violet-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
           <div className="p-8 space-y-6">
@@ -72,7 +72,7 @@ export default function Quiz() {
         </div>
 
         {/* Coding Problems Card */}
-        <div className="group relative rounded-2xl border border-border/50 bg-card overflow-hidden cursor-pointer hover:border-violet-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-violet-500/10 hover:-translate-y-1"
+        <div className="group relative glass-card card-premium overflow-hidden cursor-pointer hover:border-violet-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-violet-500/10 hover:-translate-y-1"
           onClick={() => navigate('/quiz/coding')}>
           <div className="absolute inset-0 bg-gradient-to-br from-violet-500/5 to-fuchsia-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
           <div className="p-8 space-y-6">
@@ -121,7 +121,7 @@ export default function Quiz() {
               onMouseEnter={() => setHoveredDomain(domain.id)}
               onMouseLeave={() => setHoveredDomain(null)}
               onClick={() => navigate(`/quiz/mcq?domain=${domain.id}`)}
-              className="group relative rounded-xl border border-border/50 bg-card p-4 text-left hover:border-primary/40 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg"
+              className="group relative glass-card p-4 text-left hover:border-primary/40 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg"
             >
               <div className="flex items-start justify-between mb-2">
                 <span className="text-2xl">{domain.emoji}</span>
@@ -135,7 +135,7 @@ export default function Quiz() {
       </div>
 
       {/* Stats banner */}
-      <div className="rounded-2xl border border-border/50 bg-gradient-to-r from-primary/5 via-violet-500/5 to-fuchsia-500/5 p-6">
+      <div className="glass-card bg-gradient-to-r from-primary/5 via-violet-500/5 to-fuchsia-500/5 p-6">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
           {[
             { label: 'Total Questions', value: '120+', icon: '📝' },

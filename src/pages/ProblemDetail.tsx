@@ -6,11 +6,13 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, ArrowLeft, Send, FileText, Paintbrush } from 'lucide-react';
+import { Loader2, ArrowLeft, Send, FileText, Paintbrush, Globe, MapPin, Target } from 'lucide-react';
 import DocumentationMode, { type DocumentationData, emptyDoc } from '@/components/solution/DocumentationMode';
 import BlueprintMode, { type BlueprintData, emptyBlueprint } from '@/components/solution/BlueprintMode';
 import AIAssistantPanel from '@/components/solution/AIAssistantPanel';
 import CommunitySection from '@/components/solution/CommunitySection';
+import { PageHeader } from '@/components/ui/PageHeader';
+import { SkeletonCard } from '@/components/ui/SkeletonCard';
 
 interface Problem {
   id: string;
@@ -101,7 +103,6 @@ export default function ProblemDetail() {
     try {
       const text = buildSubmissionText();
 
-      // First insert solution without score (client cannot set ai_score)
       const { data: inserted, error: insertErr } = await supabase.from('solutions').insert({
         user_id: user.id,
         problem_id: problem.id,
@@ -109,15 +110,15 @@ export default function ProblemDetail() {
       }).select('id').single();
       if (insertErr) throw new Error(insertErr.message);
 
-      // Now evaluate via backend which also saves score securely
       const res = await supabase.functions.invoke('ai-solve', {
         body: { action: 'evaluate', text, problemTitle: problem.title, problemDescription: problem.description, solutionId: inserted.id },
       });
       if (res.error) throw new Error(res.error.message);
+      
       const { score, feedback, criteria } = res.data;
       setEvaluation({ score, feedback, criteria });
 
-      toast({ title: `Solution submitted! Score: ${score}/100` });
+      toast({ title: `Solution Submitted!`, description: `You scored ${score} points.` });
       await loadSolutions();
     } catch (e: any) {
       toast({ title: 'Error', description: e.message, variant: 'destructive' });
@@ -125,87 +126,126 @@ export default function ProblemDetail() {
     setSubmitting(false);
   };
 
-  if (loading) return <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
-  if (!problem) return <div className="container py-20 text-center text-muted-foreground">Problem not found</div>;
+  if (loading) return (
+    <div className="page-container">
+       <SkeletonCard lines={2} hasHeader={true} className="h-32 mb-6" />
+       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 space-y-4">
+             <SkeletonCard lines={10} hasHeader={false} className="h-[400px]" />
+          </div>
+          <SkeletonCard lines={8} hasHeader={false} className="h-[400px]" />
+       </div>
+    </div>
+  );
+  
+  if (!problem) return <div className="page-container text-center text-muted-foreground py-20">Problem not found</div>;
 
   const currentText = buildSubmissionText();
 
   return (
-    <div className="container py-6 max-w-7xl animate-fade-in">
-      <Button variant="ghost" size="sm" onClick={() => navigate('/problems')} className="gap-2 mb-4">
-        <ArrowLeft className="h-4 w-4" /> Back to Problems
+    <div className="page-container animate-fade-in relative z-10 w-full">
+      <Button variant="ghost" size="sm" onClick={() => navigate('/problems')} className="gap-2 mb-2 w-fit -ml-2 text-muted-foreground hover:text-foreground">
+        <ArrowLeft className="h-4 w-4" /> Back
       </Button>
 
-      {/* Problem header */}
-      <div className="glass-card p-5 mb-6 space-y-2">
-        <div className="flex items-center gap-3">
-          <h1 className="text-xl font-bold">{problem.title}</h1>
-          <Badge variant="secondary">{problem.category}</Badge>
+      {/* Problem Context Banner */}
+      <div className="card-premium p-6 sm:p-8 mb-6 border-l-4 border-l-primary relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl" />
+        <div className="flex flex-wrap items-center gap-3 mb-3">
+          <Badge variant={problem.category === 'global' ? 'default' : 'secondary'} className={problem.category === 'global' ? 'gradient-primary text-primary-foreground' : ''}>
+            {problem.category === 'global' ? <Globe className="h-3.5 w-3.5 mr-1.5" /> : <MapPin className="h-3.5 w-3.5 mr-1.5" />}
+            {problem.category}
+          </Badge>
+          <Badge variant="outline" className="uppercase tracking-widest text-[10px] font-bold px-2">{problem.difficulty}</Badge>
         </div>
-        <p className="text-sm text-muted-foreground">{problem.description}</p>
+        <h1 className="text-3xl font-black mb-3">{problem.title}</h1>
+        <p className="text-muted-foreground leading-relaxed sm:text-lg max-w-4xl relative z-10">{problem.description}</p>
       </div>
 
-      {/* Main layout: Editor + AI Panel */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Editor */}
-        <div className="lg:col-span-2 space-y-4">
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="bg-secondary/50">
-              <TabsTrigger value="documentation" className="gap-2 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
-                <FileText className="h-4 w-4" /> Documentation
-              </TabsTrigger>
-              <TabsTrigger value="blueprint" className="gap-2 data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
-                <Paintbrush className="h-4 w-4" /> Visual Blueprint
-              </TabsTrigger>
-            </TabsList>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 xl:gap-8">
+        {/* Main Editor Section */}
+        <div className="lg:col-span-2 space-y-6">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="bg-card border border-border/50 rounded-2xl overflow-hidden shadow-sm">
+            <div className="bg-secondary/40 p-2 border-b border-border/30">
+              <TabsList className="bg-transparent space-x-1 h-auto p-0">
+                <TabsTrigger value="documentation" className="px-4 py-2 text-sm gap-2 data-[state=active]:bg-card data-[state=active]:shadow-sm rounded-xl transition-all">
+                  <FileText className="h-4 w-4 text-primary" /> Documentation
+                </TabsTrigger>
+                <TabsTrigger value="blueprint" className="px-4 py-2 text-sm gap-2 data-[state=active]:bg-card data-[state=active]:shadow-sm rounded-xl transition-all">
+                  <Paintbrush className="h-4 w-4 text-blue-400" /> Visual Blueprint
+                </TabsTrigger>
+              </TabsList>
+            </div>
 
-            <TabsContent value="documentation">
-              <DocumentationMode data={docData} onChange={setDocData} />
-            </TabsContent>
-            <TabsContent value="blueprint">
-              <BlueprintMode data={blueprintData} onChange={setBlueprintData} />
-            </TabsContent>
+            <div className="p-1">
+              <TabsContent value="documentation" className="m-0 focus-visible:ring-0">
+                <DocumentationMode data={docData} onChange={setDocData} />
+              </TabsContent>
+              <TabsContent value="blueprint" className="m-0 focus-visible:ring-0">
+                <BlueprintMode data={blueprintData} onChange={setBlueprintData} />
+              </TabsContent>
+            </div>
           </Tabs>
 
-          {/* Submit */}
-          <div className="flex items-center gap-3">
+          <div className="flex justify-end pt-2">
             <Button
               onClick={handleSubmit}
               disabled={submitting || !hasContent()}
-              className="gradient-primary text-primary-foreground gap-2 ml-auto"
+              size="lg"
+              className="gradient-primary text-black font-bold h-14 px-8 text-lg rounded-xl shadow-lg hover:shadow-primary/20 hover:-translate-y-1 transition-all group"
             >
-              {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-              Submit Solution for Evaluation
+              {submitting ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : <Target className="h-5 w-5 mr-2 group-hover:scale-110 transition-transform" />}
+              {submitting ? 'Evaluating...' : 'Submit for AI Evaluation'}
             </Button>
           </div>
 
-          {/* Evaluation result */}
+          {/* AI Evaluation Results */}
           {evaluation && (
-            <div className="glass-card p-5 space-y-3 glow-accent">
-              <div className="flex items-center gap-3">
-                <h3 className="font-semibold">AI Evaluation</h3>
-                <span className="text-2xl font-bold text-accent">{evaluation.score}/100</span>
-              </div>
-              {evaluation.criteria && (
-                <div className="grid grid-cols-5 gap-2 text-center text-xs">
-                  {(['relevance', 'feasibility', 'technical', 'creativity', 'clarity'] as const).map(key => (
-                    <div key={key} className="glass-card p-2">
-                      <p className="font-medium capitalize">{key}</p>
-                      <p className="text-lg font-bold text-primary">{evaluation.criteria![key]}/20</p>
-                    </div>
-                  ))}
+            <div className="glass-card overflow-hidden animate-slide-up border-primary/40 glow-primary">
+              <div className="gradient-primary p-6 text-black flex items-center justify-between">
+                <div>
+                  <h3 className="text-xl font-bold">AI Evaluation Report</h3>
+                  <p className="text-black/70 font-medium">Auto-generated feedback</p>
                 </div>
-              )}
-              <p className="text-sm text-foreground/80 whitespace-pre-wrap">{evaluation.feedback}</p>
+                <div className="flex flex-col items-end">
+                  <span className="text-4xl font-black tracking-tighter leading-none">{evaluation.score}</span>
+                  <span className="text-xs font-bold uppercase tracking-wider opacity-60">Total Score</span>
+                </div>
+              </div>
+              
+              <div className="p-6 space-y-6">
+                <p className="text-sm font-medium leading-relaxed bg-primary/5 p-4 rounded-xl border border-primary/20 text-foreground">{evaluation.feedback}</p>
+                
+                {evaluation.criteria && (
+                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                    {(['relevance', 'feasibility', 'technical', 'creativity', 'clarity'] as const).map((key, i) => {
+                      const scoreValue = evaluation.criteria![key];
+                      const pct = (scoreValue / 20) * 100;
+                      return (
+                        <div key={key} className="glass-card p-3 animate-scale-in" style={{ animationDelay: `${i * 100}ms`}}>
+                          <p className="text-[10px] uppercase font-bold text-muted-foreground mb-2">{key}</p>
+                          <div className="flex items-end gap-1 mb-2">
+                            <span className="text-2xl font-black text-foreground">{scoreValue}</span>
+                            <span className="text-xs text-muted-foreground pb-1">/20</span>
+                          </div>
+                          <div className="h-1.5 w-full bg-secondary rounded-full overflow-hidden">
+                            <div className="h-full gradient-primary rounded-full transition-all duration-1000" style={{ width: `${pct}%` }} />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
-          {/* Community */}
+          {/* Community Section */}
           <CommunitySection solutions={solutions} userId={user?.id} onRefresh={loadSolutions} />
         </div>
 
-        {/* AI Assistant */}
-        <div className="lg:col-span-1">
+        {/* AI Assistant Sidebar */}
+        <div className="lg:col-span-1 h-[calc(100vh-140px)] sticky top-24">
           <AIAssistantPanel
             problemTitle={problem.title}
             problemDescription={problem.description}
@@ -214,7 +254,7 @@ export default function ProblemDetail() {
               if (activeTab === 'documentation') {
                 setDocData(prev => ({ ...prev, proposedSolution: prev.proposedSolution ? prev.proposedSolution + '\n\n' + text : text }));
               }
-              toast({ title: 'Suggestion applied to your solution!' });
+              toast({ title: 'Suggestion prepended to documentation' });
             }}
           />
         </div>
