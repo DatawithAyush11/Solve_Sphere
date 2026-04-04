@@ -41,11 +41,6 @@ export default function AIAssistantPanel({ problemTitle, problemDescription, cur
 
   const sendMessage = async (text: string) => {
     if (!text.trim() || loading) return;
-    
-    if (text.length < 10) {
-      toast({ title: 'Invalid Input', description: 'Please enter meaningful input before using AI assistance', variant: 'destructive' });
-      return;
-    }
 
     const userMsg: Message = { id: Date.now().toString(), role: 'user', content: text };
     setMessages(prev => [...prev, userMsg]);
@@ -55,19 +50,21 @@ export default function AIAssistantPanel({ problemTitle, problemDescription, cur
     const savedScrollY = window.scrollY;
 
     try {
-      const promptText = `You are an intelligent expert assistant.
-Problem: ${problemTitle}
-Description: ${problemDescription}
+      const promptText = `You are a highly intelligent AI assistant like Gemini.
 
 User Question: ${text}
 
+Problem Context (use only if relevant):
+Title: ${problemTitle}
+Description: ${problemDescription}
+
 Instructions:
-- Answer ONLY based on the user question
+- If the question is general -> answer clearly and directly
+- If the question is related to the problem -> include relevant context
+- Do NOT force problem context unnecessarily
 - Do NOT repeat previous answers
-- Do NOT assume same answer for different questions
-- Be accurate and specific
-- Use bullet points and clean spacing
-- Do not return raw JSON`;
+- Be accurate, structured, and helpful
+- Use examples if useful`;
 
       let res = await supabase.functions.invoke('ai-solve', {
         body: {
@@ -87,7 +84,7 @@ Instructions:
         const regenRes = await supabase.functions.invoke('ai-solve', {
           body: {
             action: 'suggest',
-            text: promptText + "\n\nGive a completely different and more accurate answer. Do not repeat yourself.",
+            text: promptText + "\n\nProvide a different and more specific answer.",
             problemTitle,
             problemDescription,
             temperature: 0.9,
