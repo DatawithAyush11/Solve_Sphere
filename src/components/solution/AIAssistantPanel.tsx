@@ -28,24 +28,23 @@ export default function AIAssistantPanel({ problemTitle, problemDescription, cur
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const endOfMessagesRef = useRef<HTMLDivElement>(null);
+  const [lastResponse, setLastResponse] = useState('');
+  const chatContainerRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
   useEffect(() => {
-    endOfMessagesRef.current?.scrollIntoView({ behavior: 'smooth' });
+    // Keep internal chat scrolled to bottom safely without moving the whole page
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
   }, [messages, loading]);
 
   const sendMessage = async (text: string) => {
     if (!text.trim() || loading) return;
     
     if (text.length < 10) {
-      toast({ title: 'Prompt too short', description: 'Please provide at least 10 characters for better context.', variant: 'destructive' });
+      toast({ title: 'Invalid Input', description: 'Please enter meaningful input before using AI assistance', variant: 'destructive' });
       return;
-    }
-
-    if (!currentSolutionText.trim() && text.toLowerCase().includes('solution')) {
-       toast({ title: 'Context needed', description: 'Please write a draft solution in the editor before asking for comprehensive improvements.', variant: 'default' });
-       // We still continue but a warning is good
     }
 
     const userMsg: Message = { id: Date.now().toString(), role: 'user', content: text };
@@ -53,24 +52,68 @@ export default function AIAssistantPanel({ problemTitle, problemDescription, cur
     setInput('');
     setLoading(true);
 
+    const savedScrollY = window.scrollY;
+
     try {
-      const res = await supabase.functions.invoke('ai-solve', {
+      const promptText = `You are an intelligent expert assistant.
+Problem: ${problemTitle}
+Description: ${problemDescription}
+
+User Question: ${text}
+
+Instructions:
+- Answer ONLY based on the user question
+- Do NOT repeat previous answers
+- Do NOT assume same answer for different questions
+- Be accurate and specific
+- Use bullet points and clean spacing
+- Do not return raw JSON`;
+
+      let res = await supabase.functions.invoke('ai-solve', {
         body: {
           action: 'suggest',
-          text: `User asks: ${text}\n\nCurrent solution text drafted:\n${currentSolutionText}`,
+          text: promptText,
           problemTitle,
           problemDescription,
+          temperature: 0.7,
+          top_p: 0.9
         },
       });
       if (res.error) throw new Error(res.error.message);
       
-      const assistantMsg: Message = { id: (Date.now() + 1).toString(), role: 'assistant', content: res.data.result };
+      let aiResult = res.data.result;
+
+      if (lastResponse && aiResult.trim() === lastResponse.trim()) {
+        const regenRes = await supabase.functions.invoke('ai-solve', {
+          body: {
+            action: 'suggest',
+            text: promptText + "\n\nGive a completely different and more accurate answer. Do not repeat yourself.",
+            problemTitle,
+            problemDescription,
+            temperature: 0.9,
+            top_p: 0.9
+          },
+        });
+        if (!regenRes.error) {
+          aiResult = regenRes.data.result;
+        }
+      }
+
+      setLastResponse(aiResult);
+      const assistantMsg: Message = { id: (Date.now() + 1).toString(), role: 'assistant', content: aiResult };
       setMessages(prev => [...prev, assistantMsg]);
     } catch (e: any) {
-      toast({ title: 'AI Error', description: e.message, variant: 'destructive' });
-      setMessages(prev => [...prev, { id: Date.now().toString(), role: 'assistant', content: "Sorry, I couldn't process that request at this moment." }]);
+      toast({ title: 'Error', description: 'Unable to generate response. Try again.', variant: 'destructive' });
+      setMessages(prev => [...prev, { id: Date.now().toString(), role: 'assistant', content: "Unable to generate response. Try again." }]);
     }
+    
     setLoading(false);
+    setTimeout(() => {
+      window.scrollTo({
+        top: savedScrollY,
+        behavior: "auto"
+      });
+    }, 10);
   };
 
   return (
@@ -88,7 +131,7 @@ export default function AIAssistantPanel({ problemTitle, problemDescription, cur
       </div>
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 text-sm bg-gradient-to-b from-transparent to-primary/5">
+      <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4 text-sm bg-gradient-to-b from-transparent to-primary/5">
         {messages.length === 0 && (
           <div className="h-full flex flex-col items-center justify-center text-center space-y-4 opacity-70 animate-fade-in p-4">
             <Bot className="h-10 w-10 text-muted-foreground" />
@@ -98,7 +141,7 @@ export default function AIAssistantPanel({ problemTitle, problemDescription, cur
             </div>
             <div className="flex flex-col gap-2 mt-4 w-full">
                {quickActions.map(a => (
-                 <Button key={a.label} variant="outline" size="sm" className="bg-card w-full text-xs justify-start px-3" onClick={() => sendMessage(a.prompt)}>
+                 <Button key={a.label} variant="outline" size="sm" className="bg-card w-full text-xs justify-start px-3" onClick={() => sendMessage(a.prompt)} disabled={loading}>
                    <a.icon className="h-3.5 w-3.5 mr-2 text-primary" />
                    {a.label}
                  </Button>
@@ -128,12 +171,10 @@ export default function AIAssistantPanel({ problemTitle, problemDescription, cur
         
         {loading && (
           <div className="mr-auto flex gap-1 items-center bg-secondary px-3 py-2 rounded-2xl rounded-tl-sm border border-border/50">
-            <span className="typing-dot"></span>
-            <span className="typing-dot"></span>
-            <span className="typing-dot"></span>
+            <Loader2 className="h-4 w-4 animate-spin text-primary mr-1" />
+            <span className="text-xs font-medium text-muted-foreground">Generating...</span>
           </div>
         )}
-        <div ref={endOfMessagesRef} />
       </div>
 
       {/* Input Area */}

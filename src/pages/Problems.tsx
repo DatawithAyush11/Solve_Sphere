@@ -225,8 +225,8 @@ export default function Problems() {
                     <span className="bg-primary/20 p-1 rounded"><MapPin className="h-3 w-3" /></span> +{xpReward} XP
                   </span>
                   <Link to={`/problems/${problem.id}`}>
-                    <Button size="sm" variant={isSolved ? "secondary" : "default"} className={cn("h-8 text-xs font-semibold gap-1.5", !isSolved && "gradient-primary text-black")}>
-                      {isSolved ? "View Solution" : "Solve Challenge"} <ArrowRight className="h-3 w-3" />
+                    <Button size="sm" className="group/btn h-auto rounded-full px-5 py-2.5 text-xs font-semibold gap-1.5 shadow-md hover:shadow-lg hover:scale-105 transition-all bg-gradient-to-r from-teal-400 to-cyan-500 text-white hover:brightness-110 border-0">
+                      {isSolved ? "View Solution" : "Create Solution"} <ArrowRight className="h-3 w-3 transition-transform group-hover/btn:translate-x-1" />
                     </Button>
                   </Link>
                 </div>

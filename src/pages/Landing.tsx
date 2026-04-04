@@ -4,6 +4,7 @@ import { Target, Sparkles, Trophy, Users, DollarSign, Globe, FolderOpen, ArrowRi
 import { Logo } from '@/components/Logo';
 import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
+import { motion } from 'framer-motion';
 
 // Counter component for animated stats
 function AnimatedCounter({ end, duration = 2000, suffix = '' }: { end: number, duration?: number, suffix?: string }) {
@@ -51,10 +52,10 @@ export default function Landing() {
   return (
     <div className="min-h-screen bg-background overflow-hidden font-sans text-foreground">
       {/* Dynamic Background Mesh */}
-      <div className="absolute inset-0 z-0 opacity-40 pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/20 rounded-full blur-[120px] mix-blend-screen" />
-        <div className="absolute top-[30%] right-[-10%] w-[35%] h-[50%] bg-violet-600/15 rounded-full blur-[100px] mix-blend-screen" />
-        <div className="absolute bottom-[-20%] left-[20%] w-[50%] h-[40%] bg-blue-500/10 rounded-full blur-[120px] mix-blend-screen" />
+      <div className="absolute inset-0 z-0 opacity-60 pointer-events-none flex items-center justify-center">
+        <div className="absolute top-[5%] left-[15%] w-[40%] h-[40%] bg-teal-500/20 rounded-full blur-[120px] mix-blend-screen" />
+        <div className="absolute top-[10%] right-[10%] w-[45%] h-[45%] bg-cyan-500/20 rounded-full blur-[100px] mix-blend-screen" />
+        <div className="absolute top-[30%] left-[30%] w-[50%] h-[50%] bg-purple-500/15 rounded-full blur-[130px] mix-blend-screen" />
       </div>
 
       {/* Navbar */}
@@ -77,32 +78,65 @@ export default function Landing() {
 
       {/* Hero Section */}
       <section className="relative z-10 pt-40 pb-20 sm:pt-48 sm:pb-32 px-4 flex flex-col items-center text-center">
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-semibold mb-8 animate-fade-in">
-          <Sparkles className="h-4 w-4" />
+        <motion.div 
+          initial={{ opacity: 0, y: 30, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary/80 border border-border/50 text-foreground text-sm font-semibold mb-8 backdrop-blur-sm shadow-sm"
+        >
+          <Sparkles className="h-4 w-4 text-teal-400" />
           <span>The Next-Gen Platform for Builders</span>
-        </div>
+        </motion.div>
         
-        <h1 className="text-5xl sm:text-7xl lg:text-8xl font-black tracking-tight leading-[1.1] mb-6 max-w-5xl mx-auto animate-slide-up delay-100">
-          Transform Code Into <br className="hidden sm:block"/>
-          <span className="text-gradient-hero">Real-World Impact</span>
-        </h1>
+        <motion.h1 
+          className="text-4xl sm:text-6xl lg:text-7xl font-sans tracking-tight leading-[1.15] mb-6 max-w-4xl mx-auto"
+          initial="hidden"
+          animate="visible"
+          variants={{
+            hidden: {},
+            visible: { transition: { staggerChildren: 0.15 } }
+          }}
+        >
+          <motion.span 
+            variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
+            className="block font-medium text-foreground pb-2"
+          >
+            Transform Code Into
+          </motion.span>
+          <motion.span 
+            variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
+            className="block font-bold bg-clip-text text-transparent bg-gradient-to-r from-teal-400 via-cyan-400 to-purple-500 pb-2 drop-shadow-sm"
+          >
+            Real-World Impact
+          </motion.span>
+        </motion.h1>
         
-        <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed animate-slide-up delay-200">
+        <motion.p 
+          className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+        >
           Stop building throwaway side projects. Solve critical challenges for NGOs and startups, level up your engineering skills, and build a verified portfolio that gets you hired.
-        </p>
+        </motion.p>
         
-        <div className="flex flex-col sm:flex-row items-center gap-4 animate-slide-up delay-300">
+        <motion.div 
+          className="flex flex-col sm:flex-row items-center gap-4"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.5 }}
+        >
           <Link to="/auth">
-            <Button size="lg" className="h-14 px-8 rounded-full gradient-primary text-black font-bold text-lg hover:scale-105 transition-transform glow-primary">
+            <Button size="lg" className="h-14 px-8 rounded-full bg-gradient-to-r from-teal-400 to-cyan-500 text-white font-bold text-lg hover:scale-105 hover:shadow-[0_0_20px_rgba(45,212,191,0.4)] transition-all custom-glow">
               Join the Network <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
           </Link>
           <Link to="/auth">
-            <Button size="lg" variant="outline" className="h-14 px-8 rounded-full border-border bg-card/50 backdrop-blur text-foreground font-semibold text-lg hover:bg-secondary transition-colors">
+            <Button size="lg" variant="outline" className="h-14 px-8 rounded-full border-border bg-card/50 backdrop-blur text-foreground font-semibold text-lg hover:bg-secondary hover:scale-105 hover:shadow-md transition-all">
               Explore Problems
             </Button>
           </Link>
-        </div>
+        </motion.div>
 
         <div className="mt-16 pt-8 border-t border-border/40 w-full max-w-3xl animate-fade-in delay-500">
           <p className="text-sm font-medium text-muted-foreground mb-6 uppercase tracking-widest">Trusted by problem solvers scaling impact</p>
