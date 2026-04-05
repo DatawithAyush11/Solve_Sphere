@@ -1,5 +1,10 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+// @ts-ignore - Deno imports will show errors in standard Node TS environments
+import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
+// @ts-ignore
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+
+// Declaration fallback for VS Code if Deno extension is taking time
+declare const Deno: any;
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -18,7 +23,7 @@ function getMaxRating(aiScore: number): number {
   return 5;
 }
 
-serve(async (req) => {
+serve(async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
@@ -104,7 +109,7 @@ serve(async (req) => {
     // AI actions: suggest, improve, evaluate
     // AI actions: suggest, improve, evaluate, chat
     const { text, prompt, problemTitle, problemDescription } = body;
-    
+
     // Determine system and user prompt based on action or direct prompt
     let systemPrompt = "You are a helpful and intelligent AI assistant.";
     let userPrompt = "";

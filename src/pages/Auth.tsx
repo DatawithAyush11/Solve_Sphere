@@ -173,21 +173,21 @@ export default function Auth() {
         <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-background to-background opacity-80" />
         <div className="absolute top-[20%] left-[10%] w-72 h-72 bg-primary/10 rounded-full blur-[80px]" />
         <div className="absolute bottom-[20%] right-[10%] w-96 h-96 bg-violet-500/10 rounded-full blur-[100px]" />
-        
+
         <div className="relative z-10 w-full max-w-lg p-12 space-y-10">
           <div className="animate-fade-in delay-100 cursor-pointer" onClick={() => window.location.href = '/'}>
             <Logo variant="full" size="xl" />
           </div>
           <div className="space-y-4 animate-slide-up delay-200">
             <h1 className="text-4xl font-extrabold text-foreground tracking-tight leading-tight">
-              A smarter way to build <br/> 
+              A smarter way to build <br />
               <span className="text-gradient">Real Solutions</span>
             </h1>
             <p className="text-lg text-muted-foreground leading-relaxed">
               Join thousands of developers turning their skills into impactful real-world projects. Level up, earn verifiable XP, and build an exceptional portfolio.
             </p>
           </div>
-          
+
           <div className="grid gap-4 animate-slide-up delay-300">
             {[
               { icon: Target, title: 'Real World Problems', desc: 'Sourced from top NGOs and startups' },
@@ -213,7 +213,7 @@ export default function Auth() {
         <div className="w-full max-w-sm space-y-8 animate-fade-in relative z-10">
           {/* Mobile Logo Only */}
           <div className="lg:hidden flex justify-center mb-8 cursor-pointer" onClick={() => window.location.href = '/'}>
-             <Logo variant="full" size="lg" />
+            <Logo variant="full" size="lg" />
           </div>
 
           <div className="space-y-2 text-center lg:text-left">
@@ -221,8 +221,8 @@ export default function Auth() {
               {mode === 'signin' ? 'Welcome back' : 'Create an account'}
             </h2>
             <p className="text-sm text-muted-foreground">
-              {mode === 'signin' 
-                ? 'Enter your credentials to access your dashboard' 
+              {mode === 'signin'
+                ? 'Enter your credentials to access your dashboard'
                 : 'Join the premier problem solving platform today'}
             </p>
           </div>
@@ -237,8 +237,8 @@ export default function Auth() {
                   onClick={() => setMode(m)}
                   className={cn(
                     "flex-1 py-1.5 text-sm font-medium rounded-md transition-all duration-200",
-                    mode === m 
-                      ? "bg-card text-foreground shadow-sm border border-border/50" 
+                    mode === m
+                      ? "bg-card text-foreground shadow-sm border border-border/50"
                       : "text-muted-foreground hover:text-foreground"
                   )}
                 >
@@ -322,19 +322,19 @@ export default function Auth() {
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
-                
+
                 {/* Password strength meter */}
                 {mode === 'signup' && password.length > 0 && (
                   <div className="pt-2 pb-1 space-y-1.5 animate-fade-in">
                     <div className="flex gap-1 h-1.5 rounded-full overflow-hidden">
                       {Array.from({ length: 5 }).map((_, i) => (
-                         <div 
-                           key={i} 
-                           className={cn(
-                             "flex-1 transition-all duration-300", 
-                             i < strength ? strengthColors[strength] : "bg-secondary"
-                           )} 
-                         />
+                        <div
+                          key={i}
+                          className={cn(
+                            "flex-1 transition-all duration-300",
+                            i < strength ? strengthColors[strength] : "bg-secondary"
+                          )}
+                        />
                       ))}
                     </div>
                     <p className={cn("text-[10px] uppercase font-bold tracking-wide", strength > 3 ? "text-emerald-400" : "text-muted-foreground")}>
@@ -351,8 +351,8 @@ export default function Auth() {
                   className="w-full text-white h-11 font-semibold group relative overflow-hidden transition-all duration-300"
                   disabled={submitting}
                   style={{
-                    background: submitting 
-                      ? "hsl(var(--primary) / 0.5)" 
+                    background: submitting
+                      ? "hsl(var(--primary) / 0.5)"
                       : mode === 'signin' ? "linear-gradient(135deg, hsl(174, 84%, 48%), hsl(195, 85%, 44%))" : "linear-gradient(135deg, hsl(270, 80%, 65%), hsl(290, 80%, 72%))"
                   }}
                 >
@@ -361,7 +361,7 @@ export default function Auth() {
                     {submitting ? (
                       <><Loader2 className="h-4 w-4 animate-spin" /> {mode === 'signin' ? 'Authenticating...' : 'Provisioning account...'}</>
                     ) : (
-                       mode === 'signin' ? 'Sign In to Dashboard' : 'Create Access Key'
+                      mode === 'signin' ? 'Sign In to Dashboard' : 'Create Access Key'
                     )}
                   </span>
                 </Button>
@@ -370,10 +370,10 @@ export default function Auth() {
 
             <div className="mt-6">
               <div className="relative">
-                 <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-border/50" /></div>
-                 <div className="relative flex justify-center text-xs uppercase">
-                   <span className="bg-card px-2 text-muted-foreground font-semibold tracking-wider">or</span>
-                 </div>
+                <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-border/50" /></div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-card px-2 text-muted-foreground font-semibold tracking-wider">or</span>
+                </div>
               </div>
               <p className="text-center text-sm text-foreground mt-6 font-medium">
                 {mode === 'signin' ? "New here? " : 'Already a member? '}
@@ -386,9 +386,9 @@ export default function Auth() {
                 </button>
               </p>
             </div>
-            
+
           </div>
-          
+
           <p className="text-center text-[11px] text-muted-foreground px-6 mt-4 leading-relaxed">
             By continuing, you agree to SolveSphere's <a href="#" className="underline hover:text-foreground">Terms of Service</a> and <a href="#" className="underline hover:text-foreground">Privacy Policy</a>.
           </p>
