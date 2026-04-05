@@ -68,10 +68,9 @@ Instructions:
 - Avoid repetition
 - Give accurate, clear, and structured answers`;
 
-      try {
-        let res = await supabase.functions.invoke('ai-solve', {
-          body: { prompt: promptText }
-        });
+      let res = await supabase.functions.invoke('ai-solve', {
+        body: { prompt: promptText }
+      });
         
         if (res.error) throw new Error(res.error.message || "Failed to call backend");
         if (res.data?.error) throw new Error(res.data.error);

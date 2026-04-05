@@ -153,23 +153,35 @@ Criteria:
     }
 
     const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
-    if (!GEMINI_API_KEY) throw new Error("GEMINI_API_KEY not configured");
+    if (!GEMINI_API_KEY) {
+      console.error("Missing GEMINI_API_KEY configuration");
+      throw new Error("GEMINI_API_KEY not configured");
+    }
 
     let response;
     try {
-      response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+      const finalPrompt = systemPrompt ? `${systemPrompt}\n\n${userPrompt}` : userPrompt;
+      console.log("Sending request to Gemini API...");
+      
+      response = await fetch("https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "x-goog-api-key": GEMINI_API_KEY
+        },
         body: JSON.stringify({
-          system_instruction: {
-            parts: [{ text: systemPrompt }]
-          },
-          contents: [{ parts: [{ text: userPrompt }] }]
+          contents: [
+            {
+              parts: [{ text: finalPrompt }]
+            }
+          ]
         })
       });
     } catch (fetchError) {
       console.error("Network Error reaching Gemini:", fetchError);
-      throw new Error("Unable to contact AI service.");
+      return new Response(JSON.stringify({ error: "Unable to contact AI service." }), {
+        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
     }
 
     if (!response.ok) {
@@ -180,14 +192,18 @@ Criteria:
           status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      throw new Error(`Gemini API Error: ${response.status}`);
+      return new Response(JSON.stringify({ error: `Gemini API Error: ${response.status} - ${errText}` }), {
+        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
     }
 
     const data = await response.json();
-    const content = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+    const content = data?.candidates?.[0]?.content?.parts?.[0]?.text || "No response";
+    console.log("Gemini API responded successfully.");
 
     if (prompt) {
-      return new Response(JSON.stringify({ text: content || "No response from AI" }), {
+      return new Response(JSON.stringify({ reply: content, text: content }), {
+        status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" }
       });
     }
