@@ -71,7 +71,7 @@ Instructions:
       const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
       if (!apiKey) throw new Error("Gemini API key is not configured. Please check .env");
 
-      const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`;
+      const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 
       const fetchGemini = async (promptStr: string) => {
         const response = await fetch(geminiUrl, {
