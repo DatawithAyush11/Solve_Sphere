@@ -68,35 +68,43 @@ Instructions:
 - Avoid repetition
 - Give accurate, clear, and structured answers`;
 
-      let res = await supabase.functions.invoke('ai-solve', {
-        body: {
-          action: 'chat',
-          text: promptText,
-          systemPrompt: 'You are a highly intelligent AI assistant like Gemini or ChatGPT.',
-          problemTitle,
-          problemDescription,
-          temperature: 0.7,
-          top_p: 0.9
-        },
-      });
-      if (res.error) throw new Error(res.error.message);
-      
-      let aiResult = res.data.result;
+      const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+      if (!apiKey) throw new Error("Gemini API key is not configured. Please check .env");
+
+      const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`;
+
+      const fetchGemini = async (promptStr: string) => {
+        const response = await fetch(geminiUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: promptStr }] }]
+          })
+        });
+
+        if (!response.ok) {
+          const errText = await response.text();
+          console.error("Gemini error:", errText);
+          throw new Error(`API returned status ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log("Gemini response:", data);
+        return data.candidates?.[0]?.content?.parts?.[0]?.text;
+      };
+
+      let aiResult = await fetchGemini(promptText);
+
+      if (!aiResult) {
+        aiResult = "No response from AI";
+      }
 
       if (lastResponse && aiResult.trim() === lastResponse.trim()) {
-        const regenRes = await supabase.functions.invoke('ai-solve', {
-          body: {
-            action: 'chat',
-            text: promptText + "\n\nGive a different and more specific answer.",
-            systemPrompt: 'You are a highly intelligent AI assistant like Gemini or ChatGPT.',
-            problemTitle,
-            problemDescription,
-            temperature: 0.9,
-            top_p: 0.9
-          },
-        });
-        if (!regenRes.error) {
-          aiResult = regenRes.data.result;
+        console.log("Regenerating due to similarity...");
+        const regenPrompt = promptText + "\n\nGive a different and more specific answer.";
+        const regenResult = await fetchGemini(regenPrompt);
+        if (regenResult) {
+          aiResult = regenResult;
         }
       }
 
@@ -104,10 +112,11 @@ Instructions:
       const assistantMsg: Message = { id: (Date.now() + 1).toString(), role: 'assistant', content: aiResult };
       setMessages(prev => [...prev, assistantMsg]);
     } catch (e: any) {
+      console.error("Gemini error:", e);
       toast({ title: 'Error', description: 'Unable to generate response. Try again.', variant: 'destructive' });
       setMessages(prev => [...prev, { id: Date.now().toString(), role: 'assistant', content: "Unable to generate response. Try again." }]);
     }
-    
+
     setLoading(false);
     setTimeout(() => {
       window.scrollTo({
@@ -141,25 +150,25 @@ Instructions:
               <p className="text-xs text-muted-foreground mt-1 max-w-[200px]">Ask for hints, code improvements, or structural reviews.</p>
             </div>
             <div className="flex flex-col gap-2 mt-4 w-full">
-               {quickActions.map(a => (
-                 <Button key={a.label} variant="outline" size="sm" className="bg-card w-full text-xs justify-start px-3" onClick={() => sendMessage(a.prompt)} disabled={loading}>
-                   <a.icon className="h-3.5 w-3.5 mr-2 text-primary" />
-                   {a.label}
-                 </Button>
-               ))}
+              {quickActions.map(a => (
+                <Button key={a.label} variant="outline" size="sm" className="bg-card w-full text-xs justify-start px-3" onClick={() => sendMessage(a.prompt)} disabled={loading}>
+                  <a.icon className="h-3.5 w-3.5 mr-2 text-primary" />
+                  {a.label}
+                </Button>
+              ))}
             </div>
           </div>
         )}
-        
+
         {messages.map((m) => (
           <div key={m.id} className={cn("flex flex-col max-w-[85%] animate-scale-in origin-bottom", m.role === 'user' ? "ml-auto" : "mr-auto")}>
             <div className={cn(
-              "px-4 py-2.5 shadow-sm text-sm whitespace-pre-wrap leading-relaxed", 
+              "px-4 py-2.5 shadow-sm text-sm whitespace-pre-wrap leading-relaxed",
               m.role === 'user' ? "chat-bubble-user" : "chat-bubble-ai"
             )}>
               {m.content}
             </div>
-            
+
             {m.role === 'assistant' && onApplySuggestion && (
               <div className="mt-1 flex gap-2">
                 <Button variant="ghost" size="sm" className="h-6 text-[10px] px-2 text-primary hover:bg-primary/10 gap-1 rounded" onClick={() => onApplySuggestion(m.content)}>
@@ -169,7 +178,7 @@ Instructions:
             )}
           </div>
         ))}
-        
+
         {loading && (
           <div className="mr-auto flex gap-1 items-center bg-secondary px-3 py-2 rounded-2xl rounded-tl-sm border border-border/50">
             <Loader2 className="h-4 w-4 animate-spin text-primary mr-1" />
@@ -191,16 +200,16 @@ Instructions:
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => {
-               if (e.key === 'Enter' && !e.shiftKey) {
-                 e.preventDefault();
-                 sendMessage(input);
-               }
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage(input);
+              }
             }}
             className="flex-1 bg-secondary/30 border-border focus-visible:ring-primary h-11"
           />
-          <Button 
-            className="h-11 w-11 shrink-0 rounded-xl gradient-primary text-black group transition-all" 
-            onClick={() => sendMessage(input)} 
+          <Button
+            className="h-11 w-11 shrink-0 rounded-xl gradient-primary text-black group transition-all"
+            onClick={() => sendMessage(input)}
             disabled={loading || input.trim().length === 0}
           >
             <Send className="h-4 w-4 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 transition-transform" />
