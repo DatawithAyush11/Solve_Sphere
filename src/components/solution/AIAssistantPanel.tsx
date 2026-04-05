@@ -68,52 +68,38 @@ Instructions:
 - Avoid repetition
 - Give accurate, clear, and structured answers`;
 
-      const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-      if (!apiKey) throw new Error("Gemini API key is not configured. Please check .env");
-
-      const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-
-      const fetchGemini = async (promptStr: string) => {
-        const response = await fetch(geminiUrl, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: promptStr }] }]
-          })
+      try {
+        let res = await supabase.functions.invoke('ai-solve', {
+          body: { prompt: promptText }
         });
+        
+        if (res.error) throw new Error(res.error.message || "Failed to call backend");
+        if (res.data?.error) throw new Error(res.data.error);
+        
+        let aiResult = res.data?.text;
 
-        if (!response.ok) {
-          const errText = await response.text();
-          console.error("Gemini error:", errText);
-          throw new Error(`API returned status ${response.status}`);
+        if (!aiResult) {
+          aiResult = "No response from AI";
         }
 
-        const data = await response.json();
-        console.log("Gemini response:", data);
-        return data.candidates?.[0]?.content?.parts?.[0]?.text;
-      };
-
-      let aiResult = await fetchGemini(promptText);
-
-      if (!aiResult) {
-        aiResult = "No response from AI";
-      }
-
-      if (lastResponse && aiResult.trim() === lastResponse.trim()) {
-        console.log("Regenerating due to similarity...");
-        const regenPrompt = promptText + "\n\nGive a different and more specific answer.";
-        const regenResult = await fetchGemini(regenPrompt);
-        if (regenResult) {
-          aiResult = regenResult;
+        if (lastResponse && aiResult.trim() === lastResponse.trim()) {
+          console.log("Regenerating due to similarity...");
+          const regenPrompt = promptText + "\n\nGive a different and more specific answer.";
+          const regenRes = await supabase.functions.invoke('ai-solve', {
+            body: { prompt: regenPrompt }
+          });
+          
+          if (!regenRes.error && regenRes.data?.text) {
+            aiResult = regenRes.data.text;
+          }
         }
-      }
 
-      setLastResponse(aiResult);
-      const assistantMsg: Message = { id: (Date.now() + 1).toString(), role: 'assistant', content: aiResult };
-      setMessages(prev => [...prev, assistantMsg]);
+        setLastResponse(aiResult);
+        const assistantMsg: Message = { id: (Date.now() + 1).toString(), role: 'assistant', content: aiResult };
+        setMessages(prev => [...prev, assistantMsg]);
     } catch (e: any) {
-      console.error("Gemini error:", e);
-      toast({ title: 'Error', description: 'Unable to generate response. Try again.', variant: 'destructive' });
+      console.error("Gemini Backend Error:", e);
+      toast({ title: 'Error', description: e.message || 'Unable to generate response. Try again.', variant: 'destructive' });
       setMessages(prev => [...prev, { id: Date.now().toString(), role: 'assistant', content: "Unable to generate response. Try again." }]);
     }
 
