@@ -140,6 +140,9 @@ Criteria:
 - creativity (0-20): Innovation and originality
 - clarity (0-20): How well-written and structured`;
       userPrompt = `Problem: "${problemTitle}" - ${problemDescription}\n\nSolution to evaluate:\n${sanitizedText}\n\nReturn ONLY a JSON object with scores (0-20 each) for: relevance, feasibility, technical, creativity, clarity, and a "feedback" string.`;
+    } else if (action === "chat") {
+      systemPrompt = body.systemPrompt || "You are a helpful and intelligent AI assistant.";
+      userPrompt = sanitizedText;
     } else {
       return new Response(JSON.stringify({ error: "Invalid action" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },

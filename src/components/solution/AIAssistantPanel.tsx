@@ -50,26 +50,29 @@ export default function AIAssistantPanel({ problemTitle, problemDescription, cur
     const savedScrollY = window.scrollY;
 
     try {
-      const promptText = `You are a highly intelligent AI assistant like Gemini.
+      const promptText = `You are a highly intelligent AI assistant like Gemini or ChatGPT.
 
-User Question: ${text}
+User Question:
+${text}
 
-Problem Context (use only if relevant):
+Problem Context (ONLY if relevant):
 Title: ${problemTitle}
 Description: ${problemDescription}
-
+${currentSolutionText?.trim() ? `\nUser's Current Solution Draft:\n${currentSolutionText}\n` : ''}
 Instructions:
-- If the question is general -> answer clearly and directly
-- If the question is related to the problem -> include relevant context
-- Do NOT force problem context unnecessarily
-- Do NOT repeat previous answers
-- Be accurate, structured, and helpful
-- Use examples if useful`;
+- Understand user intent carefully
+- If the question is GENERAL → answer directly (no problem context)
+- If the question is PROBLEM-RELATED → include relevant context
+- Do NOT force solution improvement
+- Do NOT assume every question is about the problem
+- Avoid repetition
+- Give accurate, clear, and structured answers`;
 
       let res = await supabase.functions.invoke('ai-solve', {
         body: {
-          action: 'suggest',
+          action: 'chat',
           text: promptText,
+          systemPrompt: 'You are a highly intelligent AI assistant like Gemini or ChatGPT.',
           problemTitle,
           problemDescription,
           temperature: 0.7,
@@ -83,8 +86,9 @@ Instructions:
       if (lastResponse && aiResult.trim() === lastResponse.trim()) {
         const regenRes = await supabase.functions.invoke('ai-solve', {
           body: {
-            action: 'suggest',
-            text: promptText + "\n\nProvide a different and more specific answer.",
+            action: 'chat',
+            text: promptText + "\n\nGive a different and more specific answer.",
+            systemPrompt: 'You are a highly intelligent AI assistant like Gemini or ChatGPT.',
             problemTitle,
             problemDescription,
             temperature: 0.9,
